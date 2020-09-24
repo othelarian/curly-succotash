@@ -11,6 +11,25 @@ use drawing::draw;
 mod events;
 use events::{handle_events, HandleResult as HR};
 
+
+/* TODO LIST
+ *
+ * example_gl3.c -> lines 72-74 -> don't forget about this
+ * example_gl3.c -> line 97 -> handled with "unsafe" block in main(), when wc is shadowed
+ * example_gl3.c -> lines 108_112 -> there is no obvious eq. in nvg, further investigation needed
+ * example_gl3.c -> line 121 -> What this call do?
+ * resizing -> handle nvg context resizing too
+ *
+ * Reading example_gl3.c -> lines 150-182
+ *
+ * create window -> OK
+ * init nvg context -> OK
+ * draw a single red square -> WP
+ * define STENCIL & ALIASING (example_gl3.c 108-112) -> AB
+ *
+ */
+
+
 fn main() {
     let el = EventLoop::new();
     let wb = WinB::new()
@@ -34,15 +53,6 @@ fn main() {
             Event::NewEvents(StartCause::Init) =>
                 *ctrl_flow = ControlFlow::Wait,
             Event::LoopDestroyed => return,
-            /*
-            Event::WindowEvent {event, ..} => match event {
-                WindowEvent::CloseRequested => *ctrl_flow = ControlFlow::Exit,
-                WindowEvent::Resized(psize) => wc.resize(psize),
-                //
-                //
-                _ => ()
-            }
-            */
             Event::WindowEvent {event, ..} => match handle_events(&event) {
                 HR::Close => *ctrl_flow = ControlFlow::Exit,
                 HR::Resize(psize) => wc.resize(psize),
