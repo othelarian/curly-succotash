@@ -1,12 +1,12 @@
 use gl;
 use glutin::ContextBuilder as CtxtB;
 use glutin::dpi::{LogicalSize};
-use glutin::event::{Event, StartCause, WindowEvent};
+use glutin::event::{Event, StartCause};
 use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder as WinB;
 
 mod drawing;
-use drawing::draw;
+use drawing::{WindowInfo, draw, take_screenshot};
 
 mod events;
 use events::{handle_events, HandleResult as HR};
@@ -18,13 +18,22 @@ use events::{handle_events, HandleResult as HR};
  * example_gl3.c -> line 97 -> handled with "unsafe" block in main(), when wc is shadowed
  * example_gl3.c -> lines 108_112 -> there is no obvious eq. in nvg, further investigation needed
  * example_gl3.c -> line 121 -> What this call do?
- * resizing -> handle nvg context resizing too
+ * demo.c 
  *
- * Reading example_gl3.c -> lines 150-182
+ * screenshot -> https://github.com/rust-windowing/glutin/blob/master/glutin_examples/examples/headless.rs
+ *
+ * Reading example_gl3.c -> DONE
+ * Reading demo.h -> DONE
+ * Reading demo.c -> 64-1213
  *
  * create window -> OK
  * init nvg context -> OK
- * draw a single red square -> WP
+ * clear gl buffers (example_gl3.c:150) -> OK
+ * Setup windowInfo, and keep it up to date (resize) -> OK
+ * draw a single red square -> OK
+ * dive into demo.* -> WP
+ * create "savescreenshot" fn -> TD
+ * build perf graph -> TD
  * define STENCIL & ALIASING (example_gl3.c 108-112) -> AB
  *
  */
@@ -40,11 +49,12 @@ fn main() {
     gl::load_with(|p| wc.get_proc_address(p) as *const _);
 
     let renderer = nvg_gl::Renderer::create().unwrap();
-    let mut ctxt = nvg::Context::create(renderer).unwrap();
 
-    //
-    // TODO : init graphics
-    //
+    let mut win_info = WindowInfo::new(
+        nvg::Context::create(renderer).unwrap(),
+        wc.window().inner_size(),
+        wc.window().scale_factor()
+    );
 
     let ask_refresh = false;
 
@@ -55,15 +65,16 @@ fn main() {
             Event::LoopDestroyed => return,
             Event::WindowEvent {event, ..} => match handle_events(&event) {
                 HR::Close => *ctrl_flow = ControlFlow::Exit,
-                HR::Resize(psize) => wc.resize(psize),
-                //
-                //
-                Nothing => ()
+                HR::Nothing => (),
+                HR::Screenshot => take_screenshot(win_info.size()),
+                HR::Resize(psize) => { win_info.set_size(psize); wc.resize(psize); }
             }
             Event::MainEventsCleared => if ask_refresh { wc.window().request_redraw(); },
             Event::RedrawRequested(_) => {
+                draw(&mut win_info);
                 //
-                draw();
+                // TODO : add here perf graph update
+                //
                 //
                 wc.swap_buffers().unwrap();
             }
