@@ -31,8 +31,9 @@ use events::{handle_events, HandleResult as HR};
  * clear gl buffers (example_gl3.c:150) -> OK
  * Setup windowInfo, and keep it up to date (resize) -> OK
  * draw a single red square -> OK
+ * create "savescreenshot" fn -> OK
+ * integrate drawEyes() -> WP
  * dive into demo.* -> WP
- * create "savescreenshot" fn -> TD
  * build perf graph -> TD
  * define STENCIL & ALIASING (example_gl3.c 108-112) -> AB
  *
@@ -56,7 +57,7 @@ fn main() {
         wc.window().scale_factor()
     );
 
-    let ask_refresh = false;
+    let mut ask_refresh = false;
 
     el.run(move |evt, _, ctrl_flow| {
         match evt {
@@ -66,15 +67,14 @@ fn main() {
             Event::WindowEvent {event, ..} => match handle_events(&event) {
                 HR::Close => *ctrl_flow = ControlFlow::Exit,
                 HR::Nothing => (),
-                HR::Screenshot => take_screenshot(win_info.size()),
+                HR::Screenshot => { take_screenshot(win_info.size()); ask_refresh = true }
                 HR::Resize(psize) => { win_info.set_size(psize); wc.resize(psize); }
             }
-            Event::MainEventsCleared => if ask_refresh { wc.window().request_redraw(); },
+            Event::MainEventsCleared => if ask_refresh { wc.window().request_redraw(); ask_refresh = false; },
             Event::RedrawRequested(_) => {
                 draw(&mut win_info);
                 //
                 // TODO : add here perf graph update
-                //
                 //
                 wc.swap_buffers().unwrap();
             }

@@ -1,5 +1,8 @@
 /target
 
+#test
+screenshot.png
+
 #vim specific
 *.swp
 */*.swp

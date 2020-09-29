@@ -2,6 +2,7 @@ use gl;
 use glutin::dpi::PhysicalSize;
 use nvg::{Context, Extent};
 use nvg_gl::Renderer;
+use std::path::Path;
 
 pub struct WindowInfo {
     context: Context<Renderer>,
@@ -58,12 +59,6 @@ pub fn draw(win_info: &mut WindowInfo) {
 }
 
 pub fn take_screenshot(size: (u32, u32)) {
-    //
-    // TODO : take screenshot, for real
-    //
-    println!("take a screenshot!");
-    //
-    //
     let mut pixels: Vec<gl::types::GLubyte> = vec![];
     pixels.resize(3 * size.0 as usize * size.1 as usize, 0);
     unsafe { gl::ReadPixels(
@@ -71,10 +66,19 @@ pub fn take_screenshot(size: (u32, u32)) {
         gl::RGB, gl::UNSIGNED_BYTE,
         pixels.as_mut_ptr() as *mut _
     ); }
-    //
-    //
-    //
-    //unsafe { gl::DeleteFramebuffers(1,
+    let mut pixflip: Vec<gl::types::GLubyte> = vec![];
+    for v in (0..size.1 as _).rev() {
+        let s = 3 * v as usize * size.0 as usize;
+        let o = 3 * size.0 as usize;
+        pixflip.extend_from_slice(&pixels[s..(s + o)]);
+    }
+    image::save_buffer(
+        &Path::new("screenshot.png"),
+        &pixflip,
+        size.0 as u32,
+        size.1 as u32,
+        image::ColorType::Rgb8
+    ).unwrap();
 }
 
 // ##############################################################
@@ -88,4 +92,19 @@ fn render_demo(ctx: &mut Context<Renderer>) {
     ctx.fill_paint(nvg::Color::rgb_i(255, 0, 0));
     ctx.fill().unwrap();
     //
+    // TODO : everything!!
+    //
+    drawEyes(&mut ctx);
+    //
 }
+
+fn drawEyes(ctx: &mut Context<Renderer>) {
+    //
+    ctx.begin_path();
+    ctx.rect(nvg::Rect::new(nvg::Point::new(30.0, 30.0), Extent::new(60.0, 20.0)));
+    ctx.close_path();
+    ctx.fill_paint(nvg::Color::rgb_i(255, 0, 0));
+    ctx.fill().unwrap();
+    //
+}
+
