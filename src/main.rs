@@ -11,34 +11,8 @@ use drawing::{WindowInfo, draw, take_screenshot};
 mod events;
 use events::{handle_events, HandleResult as HR};
 
-
-/* TODO LIST
- *
- * example_gl3.c -> lines 72-74 -> don't forget about this
- * example_gl3.c -> line 97 -> handled with "unsafe" block in main(), when wc is shadowed
- * example_gl3.c -> lines 108_112 -> there is no obvious eq. in nvg, further investigation needed
- * example_gl3.c -> line 121 -> What this call do?
- * demo.c 
- *
- * screenshot -> https://github.com/rust-windowing/glutin/blob/master/glutin_examples/examples/headless.rs
- *
- * Reading example_gl3.c -> DONE
- * Reading demo.h -> DONE
- * Reading demo.c -> 64-1213
- *
- * create window -> OK
- * init nvg context -> OK
- * clear gl buffers (example_gl3.c:150) -> OK
- * Setup windowInfo, and keep it up to date (resize) -> OK
- * draw a single red square -> OK
- * create "savescreenshot" fn -> OK
- * integrate drawEyes() -> WP
- * dive into demo.* -> WP
- * build perf graph -> TD
- * define STENCIL & ALIASING (example_gl3.c 108-112) -> AB
- *
- */
-
+mod perf;
+use perf::{GPUTimer};
 
 fn main() {
     let el = EventLoop::new();
@@ -59,16 +33,22 @@ fn main() {
 
     let mut ask_refresh = false;
 
+    let mut gpu_timer = GPUTimer::new();
+    gpu_timer.start();
+
     el.run(move |evt, _, ctrl_flow| {
         match evt {
             Event::NewEvents(StartCause::Init) =>
                 *ctrl_flow = ControlFlow::Wait,
             Event::LoopDestroyed => return,
             Event::WindowEvent {event, ..} => match handle_events(&event) {
+                HR::Blowup => win_info.toggle_blowup(),
                 HR::Close => *ctrl_flow = ControlFlow::Exit,
+                HR::Mouse(position) => win_info.update_mouse_pos(position),
                 HR::Nothing => (),
+                HR::Premult => win_info.toggle_premult(),
                 HR::Screenshot => { take_screenshot(win_info.size()); ask_refresh = true }
-                HR::Resize(psize) => { win_info.set_size(psize); wc.resize(psize); }
+                HR::Resize(psize) => { win_info.update_size(psize); wc.resize(psize); }
             }
             Event::MainEventsCleared => if ask_refresh { wc.window().request_redraw(); ask_refresh = false; },
             Event::RedrawRequested(_) => {

@@ -1,4 +1,4 @@
-use glutin::dpi::PhysicalSize;
+use glutin::dpi::{PhysicalPosition, PhysicalSize};
 use glutin::event::{
     ElementState,
     KeyboardInput as KI,
@@ -7,8 +7,11 @@ use glutin::event::{
 };
 
 pub enum HandleResult {
+    Blowup,
     Close,
+    Mouse(PhysicalPosition<f64>),
     Nothing,
+    Premult,
     Resize(PhysicalSize<u32>),
     Screenshot
 }
@@ -16,7 +19,7 @@ pub enum HandleResult {
 pub fn handle_events(event: &WE) -> HandleResult {
     match event {
         WE::CloseRequested => HandleResult::Close,
-        WE::Resized(psize) => HandleResult::Resize(*psize),
+        WE::CursorMoved { position, ..} => HandleResult::Mouse(*position),
         WE::KeyboardInput { input: KI {
             state: ElementState::Released,
             virtual_keycode: Some(keycode),
@@ -24,22 +27,13 @@ pub fn handle_events(event: &WE) -> HandleResult {
         }, ..} => {
             match keycode {
                 VKC::Escape => HandleResult::Close,
-                VKC::Space => {
-                    //
-                    println!("space touched");
-                    //
-                    HandleResult::Nothing
-                }
-                VKC::P => {
-                    //
-                    println!("premult toggled");
-                    //
-                    HandleResult::Nothing
-                }
+                VKC::Space => HandleResult::Blowup,
+                VKC::P => HandleResult::Premult,
                 VKC::S => HandleResult::Screenshot,
                 _ => HandleResult::Nothing
             }
         }
+        WE::Resized(psize) => HandleResult::Resize(*psize),
         _ => HandleResult::Nothing
     }
 }
