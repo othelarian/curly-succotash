@@ -43,13 +43,13 @@ fn main() {
         wc.window().scale_factor()
     );
 
-    //let mut ask_refresh = false;
-
     let mut fps_graph = perf::PerfGraph::new(
         perf::GraphRenderStyle::FPS, "FPS", (5.0, 5.0)
     );
+    let _cpu_graph = perf::PerfGraph::new(
+        perf::GraphRenderStyle::MS, "CPU Time", (0.0, 0.0)
+    );
     let gpu_timer = perf::GPUTimer::new();
-    //let mut gpu_timer = GPUTimer::new();
     gpu_timer.start();
 
     let mut mode = Mode::Polled;
@@ -62,19 +62,12 @@ fn main() {
             Event::NewEvents(StartCause::Init) => {
                 println!("start waiting");
                 *ctrl_flow = ControlFlow::Wait;
-                //*ctrl_flow = ControlFlow::Wait,
-                //
                 mode = Mode::Limited;
-                //
             }
             Event::LoopDestroyed => return,
             Event::WindowEvent {event, ..} => match handle_events(&event) {
                 HR::Blowup => frame_info.toggle_blowup(),
                 HR::ChangeFlow => {
-                    //
-                    println!("change flow");
-                    //
-                    //
                     match mode {
                         Mode::Limited => {
                             *ctrl_flow = ControlFlow::Poll;
@@ -100,17 +93,10 @@ fn main() {
             //Event::MainEventsCleared => if ask_refresh {
             //    wc.window().request_redraw(); ask_refresh = false; },
             Event::RedrawRequested(_) => {
-                //
                 let t = Instant::now();
                 fps_graph.update((t - prevt).as_secs_f32());
                 prevt = t;
-                //
-                //fps_graph.update(0.0);
-                //
                 draw(&mut frame_info, &fps_graph);
-                //
-                // TODO : add here perf graph update
-                //
                 wc.swap_buffers().unwrap();
             }
             _ => ()

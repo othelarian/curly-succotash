@@ -70,18 +70,13 @@ pub fn draw(frame_info: &mut FrameInfo, perf_graph: &perf::PerfGraph) {
         );
     }
     let (w, h) = frame_info.size;
-    //
-    //
     if let Some(mut ctx) = frame_info.context.take() {
         ctx.begin_frame(
             Extent {width: w as f32, height: h as f32},
             frame_info.scale_factor
         ).unwrap();
-        //
         ctx = render_demo(ctx, (w, h), frame_info.mouse_pos,    0);
-        //
         ctx = perf_graph.render(ctx);
-        //
         ctx.end_frame().unwrap();
         frame_info.context = Some(ctx);
     }
@@ -127,11 +122,13 @@ fn render_demo(
 ) -> Context<Renderer> {
     ctx.save();
     ctx = draw_eyes(
-        ctx, width as f32 - 250.0,
-        50.0, 150.0, 100.0,
+        ctx, width as f32 - 250.0, 50.0, 150.0, 100.0,
         mx as f32, my as f32, t as f32
     );
-    //ctx = draw_paragraph(ctx);
+    ctx = draw_paragraph(
+        ctx, width as f32 - 450.0, 50.0, 150.0, 100.0,
+        mx as f32, my as f32
+    );
     //ctx = draw_graph(ctx);
     //ctx = draw_color_wheel(ctx);
     //ctx = draw_lines(); // line joints
@@ -187,7 +184,7 @@ fn draw_eyes(
     ctx.fill().unwrap();
     let mut dx = (mx - rx) / (ex * 10.0);
     let mut dy = (my - ry) / (ey * 10.0);
-    let d = (dx*dx + dy*dy).sqrt();
+    let mut d = (dx*dx + dy*dy).sqrt();
     let br = (if ex < ey { ex } else { ey }) * 0.5;
     let blink = 1.0 - ((t*0.5).sin()).powf(200.0) * 0.8;
     if d > 1.0 { dx /= d; dy /= d; }
@@ -200,7 +197,63 @@ fn draw_eyes(
     );
     ctx.fill_paint(nvg::Color::rgba_i(32, 32, 32, 255));
     ctx.fill().unwrap();
+    dx = (mx - rx) / (ex * 10.0);
+    dy = (my - ry) / (ey * 10.0);
+    d = (dx*dx + dy*dy).sqrt();
+    if d > 1.0 { dx /= d; dy /= d; }
+    dx *= ex*0.4;
+    dy *= ey*0.5;
+    ctx.begin_path();
+    ctx.ellipse(
+        nvg::Point::new(rx+dx, ry+dy+ey*0.25*(1.0-blink)),
+        br, br as f32 *blink
+    );
+    ctx.fill_paint(nvg::Color::rgba_i(32, 32, 32, 255));
+    ctx.fill().unwrap();
+    let gloss_l = nvg::Gradient::Radial {
+        center: nvg::Point::new(lx-ex*0.25, ly-ey*0.5),
+        in_radius: ex*0.1,
+        out_radius: ex*0.75,
+        inner_color: nvg::Color::rgba_i(255, 255, 255, 128),
+        outer_color: nvg::Color::rgba_i(255, 255, 255, 0)
+    };
+    ctx.begin_path();
+    ctx.ellipse(nvg::Point::new(lx, ly), ex, ey);
+    ctx.fill_paint(gloss_l);
+    ctx.fill().unwrap();
+    let gloss_r = nvg::Gradient::Radial {
+        center: nvg::Point::new(rx-ex*0.25, ry-ey*0.5),
+        in_radius: ex*0.1,
+        out_radius: ex*0.75,
+        inner_color: nvg::Color::rgba_i(255, 255, 255, 128),
+        outer_color: nvg::Color::rgba_i(255, 255, 255, 0)
+    };
+    ctx.begin_path();
+    ctx.ellipse(nvg::Point::new(rx, ry), ex, ey);
+    ctx.fill_paint(gloss_r);
+    ctx.fill().unwrap();
+    ctx
+}
+
+const PARA_TEXT: &str = "This is longer chunk of text.\n  \n  Would have used lorem ipsum but she    was busy jumping over the lazy dog with the fox and all the men who came to the aid of the party.🎉";
+const PARA_HOVER_TEXT: &str = "Hover your mouse over the text to see calculated caret position.";
+const PARA_BOX_TEXT: &str = "Testing\nsome multiline\ntext.";
+
+fn draw_paragraph(
+    mut ctx: Context<Renderer>,
+    x: f32, y: f32, w: f32, _h: f32, mx: f32, my: f32
+) -> Context<Renderer> {
+    ctx.save();
+    ctx.font_size(15.0);
+    ctx.font("sans");
+    ctx.text_align(nvg::Align::LEFT | nvg::Align::TOP);
+    //
+    let lineh = ctx.text_metrics();
     //
     //
+    //
+    //
+    //
+    ctx.restore();
     ctx
 }

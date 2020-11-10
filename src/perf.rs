@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 pub enum GraphRenderStyle {
     FPS,
     MS,
-    PERCENT
+    //PERCENT
 }
 
 pub struct PerfGraph<'a> {
@@ -16,13 +16,6 @@ pub struct PerfGraph<'a> {
 }
 
 impl<'a> PerfGraph<'a> {
-    pub fn get_average(&self) -> f32 {
-        //
-        // TODO : get the code here
-        //
-        0.0
-    }
-
     pub fn new(
         style: GraphRenderStyle, name: &'a str,
         pos: (f32, f32)
@@ -34,14 +27,12 @@ impl<'a> PerfGraph<'a> {
     }
 
     pub fn render(&self, mut ctx: Context<Renderer>) -> Context<Renderer> {
-        //
         let avg: f32 =
             self.values.iter().sum::<f32>() /
             self.values.len() as f32;
         let w = 200.0;
         let h = 35.0;
         let (x, y) = self.pos;
-        //
         ctx.begin_path();
         ctx.rect(nvg::Rect::new(
             nvg::Point::new(x, y),
@@ -54,34 +45,34 @@ impl<'a> PerfGraph<'a> {
         let cl = match self.style {
             GraphRenderStyle::FPS => {
                 |i, v, x, y, w, h| {
-                    let v = (80.0_f32).min(1.0 / (0.00001 + v));
+                    let v = (80.0_f32).min(1.0 / (0.000001 + v));
                     let vx = x + (i / 99.0) * w;
                     let vy = y + h - (v / 80.0) * h;
                     (vx, vy)
                 }
             }
+            /*
             GraphRenderStyle::MS => {
                 //
                 |_, _, _, _, _, _| { (0.0, 0.0) }
                 //
             }
-            GraphRenderStyle::PERCENT => {
+            */
+            //GraphRenderStyle::PERCENT => {
+            _ => {
                 //
                 |_, _, _, _, _, _| { (0.0, 0.0) }
                 //
             }
         };
         for (i, v) in self.values.iter().enumerate() {
-            //
-            //if v > &0.002 { println!("{}", v); }
-            //
             let (vx, vy) = cl(i as f32, v.clone(), x, y, w, h);
             ctx.line_to(nvg::Point::new(vx, vy));
         }
         ctx.line_to(nvg::Point::new(x+w, y+h));
         ctx.fill_paint(nvg::Color::rgba_i(255, 192, 0, 128));
         ctx.fill().unwrap();
-        //
+
         ctx.font("sans");
         ctx.font_size(12.0);
         ctx.text_align(nvg::Align::LEFT | nvg::Align::TOP);
@@ -89,29 +80,31 @@ impl<'a> PerfGraph<'a> {
         ctx.text(nvg::Point::new(x+3.0, y+3.0), &self.name).unwrap();
         let txt = match self.style {
             GraphRenderStyle::FPS => {
-                //
                 ctx.font_size(13.0);
                 ctx.text_align(nvg::Align::RIGHT | nvg::Align::BASELINE);
                 ctx.fill_paint(nvg::Color::rgba_i(240, 240, 240, 160));
-                ctx.text(nvg::Point::new(x+w-3.0, y+h-3.0), "avg");
-                //
+                ctx.text(
+                    nvg::Point::new(x+w-3.0, y+h-3.0),
+                    format!("{:.2} ms", avg * 1000.0)
+                ).unwrap();
                 let a = format!("{:.2} FPS", 1.0 / avg);
-                //
                 a
             }
             GraphRenderStyle::MS => {
                 let a = format!("{}", 0.0);
                 a
             }
+            /*
             GraphRenderStyle::PERCENT => {
                 let a = format!("{}", 0.0);
                 a
             }
+            */
         };
         ctx.font_size(15.0);
         ctx.text_align(nvg::Align::RIGHT | nvg::Align::TOP);
         ctx.fill_paint(nvg::Color::rgba_i(240, 240, 240, 255));
-        ctx.text(nvg::Point::new(x+w-3.0, y+3.0), txt);
+        ctx.text(nvg::Point::new(x+w-3.0, y+3.0), txt).unwrap();
         ctx
     }
 
