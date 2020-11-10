@@ -8,6 +8,7 @@ use glutin::event::{
 
 pub enum HandleResult {
     Blowup,
+    ChangeFlow,
     Close,
     Mouse(PhysicalPosition<f64>),
     Nothing,
@@ -28,6 +29,7 @@ pub fn handle_events(event: &WE) -> HandleResult {
             match keycode {
                 VKC::Escape => HandleResult::Close,
                 VKC::Space => HandleResult::Blowup,
+                VKC::F => HandleResult::ChangeFlow,
                 VKC::P => HandleResult::Premult,
                 VKC::S => HandleResult::Screenshot,
                 _ => HandleResult::Nothing

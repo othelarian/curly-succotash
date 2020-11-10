@@ -4,7 +4,9 @@ use nvg::{Context, Extent};
 use nvg_gl::Renderer;
 use std::path::Path;
 
-pub struct WindowInfo {
+use crate::perf;
+
+pub struct FrameInfo {
     context: Option<Context<Renderer>>,
     size: (u32, u32),
     scale_factor: f32,
@@ -13,13 +15,20 @@ pub struct WindowInfo {
     premult: bool
 }
 
-impl WindowInfo {
+impl FrameInfo {
     pub fn new(
         context: Context<Renderer>,
         psize: PhysicalSize<u32>,
         scale_factor: f64
-    ) -> WindowInfo {
-        WindowInfo {
+    ) -> FrameInfo {
+        unsafe {
+            gl::Viewport(
+                0, 0,
+                psize.width as i32,
+                psize.height as i32
+            );
+        }
+        FrameInfo {
             context: Some(context),
             size: (psize.width, psize.height),
             scale_factor: scale_factor as f32,
@@ -39,8 +48,8 @@ impl WindowInfo {
         unsafe {
             gl::Viewport(
                 0, 0,
-                (psize.width as f32 * self.scale_factor) as i32,
-                (psize.height as f32 * self.scale_factor) as i32
+                psize.width as i32,
+                psize.height as i32
             );
         }
         self.size = (psize.width, psize.height);
@@ -51,25 +60,30 @@ impl WindowInfo {
     }
 }
 
-pub fn draw(win_info: &mut WindowInfo) {
+pub fn draw(frame_info: &mut FrameInfo, perf_graph: &perf::PerfGraph) {
     unsafe {
-        gl::ClearColor(0.0, 0.0, 0.0, 1.0);
-        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
+        gl::ClearColor(0.3, 0.3, 0.32, 1.0);
+        gl::Clear(
+            gl::COLOR_BUFFER_BIT |
+            gl::DEPTH_BUFFER_BIT |
+            gl::STENCIL_BUFFER_BIT
+        );
     }
-    let (w, h) = win_info.size;
-    if let Some(mut ctx) = win_info.context.take() {
+    let (w, h) = frame_info.size;
+    //
+    //
+    if let Some(mut ctx) = frame_info.context.take() {
         ctx.begin_frame(
             Extent {width: w as f32, height: h as f32},
-            win_info.scale_factor
+            frame_info.scale_factor
         ).unwrap();
-        ctx.save();
-        ctx = render_demo(ctx, (w, h), win_info.mouse_pos,    0);
-        // 
-        // TODO : render graph
         //
-        ctx.restore();
+        ctx = render_demo(ctx, (w, h), frame_info.mouse_pos,    0);
+        //
+        ctx = perf_graph.render(ctx);
+        //
         ctx.end_frame().unwrap();
-        win_info.context = Some(ctx);
+        frame_info.context = Some(ctx);
     }
 }
 
@@ -103,25 +117,20 @@ pub fn take_screenshot(size: (u32, u32)) {
 // PRIVATE ZONE #################################################
 
 fn render_demo(
-        mut ctx: Context<Renderer>,
-        size: (u32, u32),
-        mouse_pos: (f64, f64),
-        //
-        // TODO : keyboard status
-        //
-        t: usize
-    ) -> Context<Renderer> {
+    mut ctx: Context<Renderer>,
+    (width, height): (u32, u32),
+    (mx, my): (f64, f64),
     //
-    ctx.begin_path();
-    ctx.rect(nvg::Rect::new(nvg::Point::new(20.0, 20.0), Extent::new(50.0, 50.0)));
-    ctx.close_path();
-    ctx.fill_paint(nvg::Color::rgb_i(255, 0, 0));
-    ctx.fill().unwrap();
+    // TODO : keyboard status
     //
-    // TODO : everything!!
-    //
-        //x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t: f32
-    //ctx = draw_eyes(ctx, width -250, );
+    t: usize
+) -> Context<Renderer> {
+    ctx.save();
+    ctx = draw_eyes(
+        ctx, width as f32 - 250.0,
+        50.0, 150.0, 100.0,
+        mx as f32, my as f32, t as f32
+    );
     //ctx = draw_paragraph(ctx);
     //ctx = draw_graph(ctx);
     //ctx = draw_color_wheel(ctx);
@@ -140,23 +149,58 @@ fn render_demo(
     //ctx = draw_label
     //ctx = draw_edit_box
     //
-    //
+    ctx.restore();
     ctx
 }
 
 fn draw_eyes(
-        mut ctx: Context<Renderer>,
-        x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t: f32
-    ) -> Context<Renderer> {
-    //
-    //
+    mut ctx: Context<Renderer>,
+    x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t: f32
+) -> Context<Renderer> {
+    let ex = w * 0.23;
+    let ey = h * 0.5;
+    let lx = x + ex;
+    let ly = y + ey;
+    let rx = x + w  - ex;
+    let ry = y + ey;
+    let bg1 = nvg::Gradient::Linear {
+        start: nvg::Point::new(x, y + h * 0.5),
+        end: nvg::Point::new(x + w * 0.1, y + h),
+        start_color: nvg::Color::rgba_i(0, 0, 0, 32),
+        end_color: nvg::Color::rgba_i(0, 0, 0, 16)
+    };
     ctx.begin_path();
-    ctx.rect(nvg::Rect::new(nvg::Point::new(30.0, 30.0), Extent::new(60.0, 20.0)));
-    ctx.close_path();
-    ctx.fill_paint(nvg::Color::rgb_i(0, 255, 0));
+    ctx.ellipse(nvg::Point::new(lx + 3.0, ly + 16.0), ex, ey);
+    ctx.ellipse(nvg::Point::new(rx + 3.0, ry + 16.0), ex, ey);
+    ctx.fill_paint(bg1);
+    ctx.fill().unwrap();
+    let bg2 = nvg::Gradient::Linear {
+        start: nvg::Point::new(x, y + h * 0.25),
+        end: nvg::Point::new(x + w * 0.1, y + h),
+        start_color: nvg::Color::rgba_i(220, 220, 220, 255),
+        end_color: nvg::Color::rgba_i(128, 128, 128, 255)
+    };
+    ctx.begin_path();
+    ctx.ellipse(nvg::Point::new(lx, ly), ex, ey);
+    ctx.ellipse(nvg::Point::new(rx, ry), ex, ey);
+    ctx.fill_paint(bg2);
+    ctx.fill().unwrap();
+    let mut dx = (mx - rx) / (ex * 10.0);
+    let mut dy = (my - ry) / (ey * 10.0);
+    let d = (dx*dx + dy*dy).sqrt();
+    let br = (if ex < ey { ex } else { ey }) * 0.5;
+    let blink = 1.0 - ((t*0.5).sin()).powf(200.0) * 0.8;
+    if d > 1.0 { dx /= d; dy /= d; }
+    dx *= ex*0.4;
+    dy *= ey*0.5;
+    ctx.begin_path();
+    ctx.ellipse(
+        nvg::Point::new(lx+dx, ly+dy+ey*0.25*(1.0-blink)),
+        br, br as f32 *blink
+    );
+    ctx.fill_paint(nvg::Color::rgba_i(32, 32, 32, 255));
     ctx.fill().unwrap();
     //
     //
     ctx
 }
-
