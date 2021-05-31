@@ -54,7 +54,8 @@ fn main() {
 
     let mut mode = Mode::Polled;
 
-    let mut prevt = Instant::now();
+    let elap_t = Instant::now();
+    let mut prevt = elap_t.clone();
 
     el.run(move |evt, _, ctrl_flow| {
         wc.window().request_redraw();
@@ -96,7 +97,7 @@ fn main() {
                 let t = Instant::now();
                 fps_graph.update((t - prevt).as_secs_f32());
                 prevt = t;
-                draw(&mut frame_info, &fps_graph);
+                draw(&mut frame_info, &fps_graph, (t - elap_t).as_secs_f32());
                 wc.swap_buffers().unwrap();
             }
             _ => ()

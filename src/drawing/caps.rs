@@ -6,7 +6,7 @@ pub fn draw(
     x: f32, y: f32, width: f32
 ) -> Context<Renderer> {
     let caps = [LineCap::Butt, LineCap::Round, LineCap::Square];
-    let line_width = 8.0;
+    let line_width = 7.0;
     ctx.save();
     ctx.begin_path();
     ctx.rect(Rect::new(
@@ -20,18 +20,15 @@ pub fn draw(
     ctx.fill_paint(Color::rgba_i(255, 255, 255, 32));
     ctx.fill().unwrap();
     ctx.stroke_width(line_width);
+    ctx.stroke_paint(Color::rgba_i(0, 0, 0, 255));
     for n in 0..3 {
         ctx.line_cap(caps[n]);
-        ctx.stroke_paint(Color::rgba_i(0, 0, 0, 255));
         ctx.begin_path();
-        // println!("{}", y + (n*10+5) as f32);
         ctx.move_to(Point::new(x, y+ ((n*10+5) as f32)));
-        // TODO : issue with the end of the lines
-        //
         ctx.line_to(Point::new(x+width, y+ (n*10+5) as f32));
-        //
         ctx.stroke().unwrap();
     }
+    ctx.fill_paint(Color::rgb_i(255, 0, 0));
     ctx.restore();
     ctx
 }
