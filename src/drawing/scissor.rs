@@ -43,7 +43,7 @@ pub fn draw(
     // Draw second rectangle with combined scissoring.
     ctx.intersect_scissor(Rect::new(
         Point::new(-20.0,-10.0),
-        Extent::new(30.0, 27.0)
+        Extent::new(60.0, 30.0)
     ));
     ctx.begin_path();
     ctx.rect(Rect::new(
