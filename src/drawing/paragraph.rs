@@ -9,6 +9,9 @@ pub fn draw(
     mut ctx: Context<Renderer>,
     _x: f32, _y: f32, _w: f32, _h: f32, _mx: f32, _my: f32
 ) -> Context<Renderer> {
+    //
+    let _gutter = 0;
+    //
     ctx.save();
     ctx.font_size(15.0);
     ctx.font("sans");
@@ -18,6 +21,12 @@ pub fn draw(
     //
     //
     //
+    /*
+    if (gutter > 0) {
+        //
+        //
+    }
+    */
     //
     //
     ctx.restore();
