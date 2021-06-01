@@ -1,4 +1,4 @@
-use nvg::{Context, Point, Extent, Rect, Paint, Color};
+use nvg::{Context, Point, Extent, Rect, Color};
 use nvg_gl::Renderer;
 
 
@@ -16,10 +16,10 @@ pub fn draw(
         Point::new(-20.0, -20.0),
         Extent::new(60.0, 40.0)
     ));
-    ctx.fill_paint(Paint::from(Color::rgba_i(255, 0, 0, 255)));
+    ctx.fill_paint(Color::rgba_i(255, 0, 0, 255));
     ctx.fill().unwrap();
     ctx.scissor(Rect::new(
-        Point::new(20.0, 20.0),
+        Point::new(-20.0, -20.0),
         Extent::new(60.0,40.0))
     );
 
@@ -28,29 +28,22 @@ pub fn draw(
     ctx.translate(40.0, 0.0);
     ctx.rotate(t);
 
+    let rect = Rect::new(Point::new(-20.0, -10.0), Extent::new(60.0, 30.0));
+
     // Draw the intended second rectangle without any scissoring.
     ctx.save();
     ctx.reset_scissor();
     ctx.begin_path();
-    ctx.rect(Rect::new(
-        Point::new(-20.0, -10.0),
-        Extent::new(60.0, 30.0)
-    ));
-    ctx.fill_paint(Paint::from(Color::rgba_i(255, 128, 0, 64)));
+    ctx.rect(rect.clone());
+    ctx.fill_paint(Color::rgba_i(255, 128, 0, 64));
     ctx.fill().unwrap();
     ctx.restore();
 
     // Draw second rectangle with combined scissoring.
-    ctx.intersect_scissor(Rect::new(
-        Point::new(-20.0,-10.0),
-        Extent::new(60.0, 30.0)
-    ));
+    ctx.intersect_scissor(rect.clone());
     ctx.begin_path();
-    ctx.rect(Rect::new(
-        Point::new(-20.0,-10.0),
-        Extent::new(60.0, 30.0)
-    ));
-    ctx.fill_paint(Paint::from(Color::rgba_i(255, 128, 0, 255)));
+    ctx.rect(rect.clone());
+    ctx.fill_paint(Color::rgba_i(255, 128, 0, 255));
     ctx.fill().unwrap();
     ctx.restore();
 
