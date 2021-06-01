@@ -112,7 +112,7 @@ pub fn take_screenshot(size: (u32, u32)) {
 // PRIVATE ZONE #################################################
 
 mod caps;
-mod color_wheel; // TODO
+mod color_wheel;
 mod eyes;
 //mod label
 mod lines;
