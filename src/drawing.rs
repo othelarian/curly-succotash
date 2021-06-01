@@ -75,7 +75,7 @@ pub fn draw(frame_info: &mut FrameInfo, perf_graph: &perf::PerfGraph, t: f32) {
             Extent {width: w as f32, height: h as f32},
             frame_info.scale_factor
         ).unwrap();
-        ctx = render_demo(ctx, (w, h), frame_info.mouse_pos, t);
+        ctx = render_demo(ctx, (w, h), frame_info.mouse_pos, frame_info.blowup, t);
         ctx = perf_graph.render(ctx);
         ctx.end_frame().unwrap();
         frame_info.context = Some(ctx);
@@ -125,6 +125,7 @@ fn render_demo(
     mut ctx: Context<Renderer>,
     (width, height): (u32, u32),
     (mx, my): (f64, f64),
+    blowup: bool,
     //
     // TODO : keyboard status
     //
@@ -153,7 +154,14 @@ fn render_demo(
     ctx = caps::draw(ctx, 10.0, 300.0, 30.0);
     ctx = scissor::draw(ctx, 50.0, height as f32 - 80.0, t);
     //
+    ctx.restore();
     //blowup
+    ctx.save();
+    if blowup {
+        
+        ctx.rotate(((t*0.3).sin()*5.0).to_radians());
+        ctx.scale(2.0, 2.0);
+    }
     //
     // widgets
     ctx = window::draw(ctx, "Widgets 'n Stuff", 50.0, 50.0, 300.0, 400.0);
