@@ -121,6 +121,7 @@ mod widths;
 mod window;
 mod scissor;
 mod search_box;
+mod drop_down;
 
 fn render_demo(
     mut ctx: Context<Renderer>,
@@ -167,9 +168,11 @@ fn render_demo(
     // widgets
     ctx = window::draw(ctx, "Widgets 'n Stuff", 50.0, 50.0, 300.0, 400.0);
     //
-    let mut x = 60.0;
-    let mut y = 95.0;
+    let x = 60.0;
+    let y = 95.0;
     ctx = search_box::draw(ctx, "Search", x, y, 280.0, 25.0);
+    let y = y + 40.0;
+    ctx = drop_down::draw(ctx, "Effects", x, y, 280.0, 28.0);
     //
     //ctx = draw_search_bow
     //ctx = draw_drop_down
