@@ -115,7 +115,7 @@ mod caps;
 mod color_wheel; // TODO
 mod eyes;
 //mod label
-mod lines; // TO FIX
+mod lines;
 mod paragraph; // TODO
 mod widths;
 

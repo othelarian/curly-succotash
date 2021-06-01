@@ -12,7 +12,7 @@ pub fn draw(
         ctx.stroke_width(w);
         ctx.begin_path();
         ctx.move_to(Point::new(x, y));
-        ctx.line_to(Point::new(x+width, y+width));
+        ctx.line_to(Point::new(x+width, y+width*0.3));
         ctx.stroke().unwrap();
         y += 10.0;
     }

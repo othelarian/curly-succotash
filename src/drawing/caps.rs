@@ -6,7 +6,7 @@ pub fn draw(
     x: f32, y: f32, width: f32
 ) -> Context<Renderer> {
     let caps = [LineCap::Butt, LineCap::Round, LineCap::Square];
-    let line_width = 7.0;
+    let line_width = 8.0;
     ctx.save();
     ctx.begin_path();
     ctx.rect(Rect::new(
@@ -28,7 +28,6 @@ pub fn draw(
         ctx.line_to(Point::new(x+width, y+ (n*10+5) as f32));
         ctx.stroke().unwrap();
     }
-    ctx.fill_paint(Color::rgb_i(255, 0, 0));
     ctx.restore();
     ctx
 }
