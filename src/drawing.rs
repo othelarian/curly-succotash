@@ -118,6 +118,7 @@ mod eyes;
 mod lines;
 mod paragraph; // TODO
 mod widths;
+mod window;
 
 fn render_demo(
     mut ctx: Context<Renderer>,
@@ -154,7 +155,7 @@ fn render_demo(
     //blowup
     //
     // widgets
-    //ctx = draw_window
+    ctx = window::draw(ctx, "Widgets 'n Stuff", 50.0, 50.0, 300.0, 400.0);
     //
     let mut _x = 60;
     let mut _y = 95;
