@@ -1,6 +1,6 @@
 use gl;
 use glutin::dpi::{PhysicalPosition, PhysicalSize};
-use nvg::{Context, Extent};
+use nvg::{Context, Extent, Color};
 use nvg_gl::Renderer;
 use std::path::Path;
 
@@ -122,6 +122,10 @@ mod window;
 mod scissor;
 mod search_box;
 mod drop_down;
+mod label;
+mod edit_box;
+mod check_box;
+mod button;
 
 fn render_demo(
     mut ctx: Context<Renderer>,
@@ -173,15 +177,25 @@ fn render_demo(
     ctx = search_box::draw(ctx, "Search", x, y, 280.0, 25.0);
     let y = y + 40.0;
     ctx = drop_down::draw(ctx, "Effects", x, y, 280.0, 28.0);
-    //
-    //ctx = draw_search_bow
-    //ctx = draw_drop_down
+    let thumb_y = y + 14.0;
+
     // forms
-    //ctx = draw_label
-    //
-    //
-    //
-    //ctx = draw_edit_box
+    let y = y + 45.0;
+    ctx = label::draw(ctx, "Login", x, y, 280.0, 20.0);
+    let y = y + 25.0;
+    ctx = edit_box::draw(ctx, "Email", x, y, 280.0, 28.0);
+    let y = y + 35.0;
+    ctx = edit_box::draw(ctx, "Password", x, y, 280.0, 28.0);
+    let y = y + 38.0;
+    ctx = check_box::draw(ctx, "Remember me", x, y, 140.0, 28.0);
+    #[allow(non_snake_case)]
+    let ICON_LOGIN = "";
+    ctx = button::draw(ctx, Some(ICON_LOGIN), "Sign in", x+138.0, y, 140.0, 28.0, Color::rgba_i(0, 96, 128, 255));
+
+    let y = y + 45.0;
+    ctx = label::draw(ctx, "Diameter", x, y, 280.0, 20.0);
+    let y = y + 25.0;
+    
     //
     ctx.restore();
     ctx
