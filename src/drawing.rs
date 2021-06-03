@@ -124,8 +124,10 @@ mod search_box;
 mod drop_down;
 mod label;
 mod edit_box;
+mod edit_box_num;
 mod check_box;
 mod button;
+mod slider;
 
 fn render_demo(
     mut ctx: Context<Renderer>,
@@ -195,7 +197,14 @@ fn render_demo(
     let y = y + 45.0;
     ctx = label::draw(ctx, "Diameter", x, y, 280.0, 20.0);
     let y = y + 25.0;
-    
+    ctx = edit_box_num::draw(ctx, "123.00", "px", x+180.0, y, 100.0, 28.0);
+    ctx = slider::draw(ctx, 0.4, x, y, 170.0, 28.0);
+    let y = y + 55.0;
+
+    #[allow(non_snake_case)]
+    let ICON_TRASH = "";
+    ctx = button::draw(ctx, Some(ICON_TRASH), "Delete", x, y, 160.0, 28.0, Color::rgba_i(128, 16, 8, 255));
+    ctx = button::draw(ctx, None, "Cancel", x+170.0, y, 110.0, 28.0, Color::rgba_i(0, 0, 0, 0));
     //
     ctx.restore();
     ctx

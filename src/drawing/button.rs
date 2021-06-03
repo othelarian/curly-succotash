@@ -28,7 +28,8 @@ pub fn draw(
     color: Color
 ) -> Context<Renderer> {
     let corner_radius = 4.0;
-    let tw = 40.0;
+    let text_font_size = 17.0;
+    let icon_font_size = h*1.3;
     let iw = 25.0;
     let bg_alpha = if color.is_black() {16} else {32};
     let bg = Gradient::Linear {
@@ -61,22 +62,24 @@ pub fn draw(
     ctx.stroke_paint(Color::rgba_i(0, 0, 0, 48));
     ctx.stroke().unwrap();
 
-    ctx.font_size(17.0);
+    ctx.font_size(text_font_size);
     ctx.font("sans-bold");
 
     // TODO: implement nvgTextBounds from nanovg as a trait for Context
     // tw = nvgTextBounds(vg, 0,0, text, NULL, NULL);
+    let tw = text.chars().count() as f32 * text_font_size/2.3; // TODO: replace when nvgTextBounds is implemented
     if let Some(icon) = icon {
-        ctx.font_size(h*1.3);
+        ctx.font_size(icon_font_size);
         ctx.font("icons");
         // iw = nvgTextBounds(vg, 0,0, cpToUTF8(preicon,icon), NULL, NULL);
+        let iw = icon.chars().count() as f32 * icon_font_size/2.3; // TODO: replace when nvgTextBounds is implemented
         let iw = iw+h*0.15;
         ctx.fill_paint(Color::rgba_i(255, 255, 255, 96));
         ctx.text_align(Align::LEFT|Align::MIDDLE);
         ctx.text(Point::new(x+w*0.5-tw*0.5-iw*0.75, y+h*0.5), icon).unwrap();
     }
 
-    ctx.font_size(17.0);
+    ctx.font_size(text_font_size);
     ctx.font("sans-bold");
     ctx.text_align(Align::LEFT|Align::MIDDLE);
     ctx.fill_paint(Color::rgba_i(0, 0, 0, 160));

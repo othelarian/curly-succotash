@@ -12,10 +12,9 @@ pub fn draw(
     #[allow(non_snake_case)]
     let ICON_SEARCH = "🔍";
     #[allow(non_snake_case)]
-    let ICON_CIRCLED_CROSS = "";
+    let ICON_CIRCLED_CROSS = "✖";
     let icon_color = Color::rgba_i(255, 255, 255, 32);
     let icon_align = Align::CENTER|Align::MIDDLE;
-    let icon_pos = Point::new(x+h*0.55, y+h*0.55);
     let corner_radius = h/2.1;
     let bg = Gradient::Box {
         rect: Rect::new(
@@ -41,7 +40,7 @@ pub fn draw(
     ctx.font("icons");
     ctx.fill_paint(Color::rgba_i(255, 255, 255, 64));
     ctx.text_align(icon_align.clone());
-    ctx.text(icon_pos.clone(), ICON_SEARCH).unwrap();
+    ctx.text(Point::new(x+h*0.55, y+h*0.55), ICON_SEARCH).unwrap();
     
     ctx.font_size(17.0);
     ctx.font("sans");
@@ -54,7 +53,7 @@ pub fn draw(
     ctx.font("icons");
     ctx.fill_paint(icon_color.clone());
     ctx.text_align(icon_align.clone());
-    ctx.text(icon_pos.clone(), ICON_CIRCLED_CROSS).unwrap();
+    ctx.text(Point::new(x+w-h*0.55, y+h*0.55), ICON_CIRCLED_CROSS).unwrap();
 
     ctx
 }
