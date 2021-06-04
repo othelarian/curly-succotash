@@ -1,16 +1,6 @@
 use nvg::{Context, Color, Align, Point, Gradient, Rect, Extent};
 use nvg_gl::Renderer;
 
-fn isBlack(col: Color)
-{
-
-	// if( col.r == 0.0f && col.g == 0.0f && col.b == 0.0f && col.a == 0.0f )
-	// {
-	// 	return 1;
-	// }
-	// return 0;
-}
-
 trait ColorUtil {
     fn is_black(self) -> bool;
 }
