@@ -11,3 +11,6 @@ screenshot.png
 #emacs specific
 *.*~
 
+#vscode specific
+.vscode/*
+tempCodeRunnerFile*
