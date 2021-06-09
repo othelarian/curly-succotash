@@ -1,6 +1,6 @@
 use gl;
 use glutin::dpi::{PhysicalPosition, PhysicalSize};
-use nvg::{Context, Extent, Color};
+use nvg::{Context, Extent, Color, ImageId};
 use nvg_gl::Renderer;
 use std::path::Path;
 
@@ -12,14 +12,16 @@ pub struct FrameInfo {
     scale_factor: f32,
     mouse_pos: (f64, f64),
     blowup: bool,
-    premult: bool
+    premult: bool,
+    images: Vec<ImageId>
 }
 
 impl FrameInfo {
     pub fn new(
         context: Context<Renderer>,
         psize: PhysicalSize<u32>,
-        scale_factor: f64
+        scale_factor: f64,
+        images: Vec<ImageId>
     ) -> FrameInfo {
         unsafe {
             gl::Viewport(
@@ -34,7 +36,8 @@ impl FrameInfo {
             scale_factor: scale_factor as f32,
             mouse_pos: (0.0, 0.0),
             blowup: false,
-            premult: false
+            premult: false,
+            images: images
         }
     }
 
@@ -75,7 +78,7 @@ pub fn draw(frame_info: &mut FrameInfo, perf_graph: &perf::PerfGraph, t: f32) {
             Extent {width: w as f32, height: h as f32},
             frame_info.scale_factor
         ).unwrap();
-        ctx = render_demo(ctx, (w, h), frame_info.mouse_pos, frame_info.blowup, t);
+        ctx = render_demo(ctx, frame_info.mouse_pos, (w, h), t, frame_info.blowup, &frame_info.images);
         ctx = perf_graph.render(ctx);
         ctx.end_frame().unwrap();
         frame_info.context = Some(ctx);
@@ -128,16 +131,19 @@ mod edit_box_num;
 mod check_box;
 mod button;
 mod slider;
+mod thumbnails;
+use crate::drawing::thumbnails::Thumbnails;
 
 fn render_demo(
     mut ctx: Context<Renderer>,
-    (width, height): (u32, u32),
     (mx, my): (f64, f64),
+    (width, height): (u32, u32),
+    t: f32,
     blowup: bool,
+    images: &Vec<ImageId>
     //
     // TODO : keyboard status
     //
-    t: f32
 ) -> Context<Renderer> {
     //
     //
@@ -206,6 +212,8 @@ fn render_demo(
     ctx = button::draw(ctx, Some(ICON_TRASH), "Delete", x, y, 160.0, 28.0, Color::rgba_i(128, 16, 8, 255));
     ctx = button::draw(ctx, None, "Cancel", x+170.0, y, 110.0, 28.0, Color::rgba_i(0, 0, 0, 0));
     //
+
+    ctx.thumbnails(365.0, thumb_y-30.0, 160.0, 300.0, &images, t);
     ctx.restore();
     ctx
 }
