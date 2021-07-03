@@ -5,6 +5,7 @@ use glutin::event::{Event, StartCause};
 use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder as WinB;
 use nvg;
+use nvg::ImageFlags;
 use nvg_gl;
 use std::time::Instant;
 
@@ -15,6 +16,9 @@ mod events;
 use events::{handle_events, HandleResult as HR};
 
 mod perf;
+
+// Debug
+use std::fs;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 enum Mode { Limited, Polled }
@@ -30,6 +34,22 @@ fn main() {
 
     let renderer = nvg_gl::Renderer::create().unwrap();
     let mut nvg_ctx = nvg::Context::create(renderer).unwrap();
+
+
+    // TODO: correct bug of Context::create_image_from_file
+    let images = match fs::read_dir("resources/images") {
+        Err(msg) => { println!("! {:?}", msg.kind()); vec!{} },
+        Ok(paths) => paths.map(|path| {
+            match path {
+                Err(msg) => { println!("! {:?}", msg.kind()); 0},
+                Ok(file) => nvg_ctx.create_image(
+                    ImageFlags::NEAREST,
+                    fs::read(file.path()).unwrap()
+                ).unwrap()                
+            }
+        }).collect()
+    };
+
     nvg_ctx.create_font_from_file("sans", "resources/Roboto-Regular.ttf")
         .unwrap();
     nvg_ctx.create_font_from_file("icons", "resources/entypo.ttf")
@@ -42,7 +62,8 @@ fn main() {
         nvg_ctx,
         wc.window().inner_size(),
         //wc.window().scale_factor()
-        1.0
+        1.0,
+        images
     );
 
     let mut fps_graph = perf::PerfGraph::new(

@@ -1,6 +1,6 @@
 use gl;
 use glutin::dpi::{PhysicalPosition, PhysicalSize};
-use nvg::{Context, Extent};
+use nvg::{Context, Extent, Color, ImageId};
 use nvg_gl::Renderer;
 use std::path::Path;
 
@@ -12,14 +12,16 @@ pub struct FrameInfo {
     scale_factor: f32,
     mouse_pos: (f64, f64),
     blowup: bool,
-    premult: bool
+    premult: bool,
+    images: Vec<ImageId>
 }
 
 impl FrameInfo {
     pub fn new(
         context: Context<Renderer>,
         psize: PhysicalSize<u32>,
-        scale_factor: f64
+        scale_factor: f64,
+        images: Vec<ImageId>
     ) -> FrameInfo {
         unsafe {
             gl::Viewport(
@@ -34,7 +36,8 @@ impl FrameInfo {
             scale_factor: scale_factor as f32,
             mouse_pos: (0.0, 0.0),
             blowup: false,
-            premult: false
+            premult: false,
+            images: images
         }
     }
 
@@ -75,7 +78,7 @@ pub fn draw(frame_info: &mut FrameInfo, perf_graph: &perf::PerfGraph, t: f32) {
             Extent {width: w as f32, height: h as f32},
             frame_info.scale_factor
         ).unwrap();
-        ctx = render_demo(ctx, (w, h), frame_info.mouse_pos, t);
+        ctx = render_demo(ctx, frame_info.mouse_pos, (w, h), t, frame_info.blowup, &frame_info.images);
         ctx = perf_graph.render(ctx);
         ctx.end_frame().unwrap();
         frame_info.context = Some(ctx);
@@ -118,16 +121,29 @@ mod eyes;
 mod lines;
 mod paragraph; // TODO
 mod widths;
+mod window;
 mod scissor;
+mod search_box;
+mod drop_down;
+mod label;
+mod edit_box;
+mod edit_box_num;
+mod check_box;
+mod button;
+mod slider;
+mod thumbnails;
+use crate::drawing::thumbnails::Thumbnails;
 
 fn render_demo(
     mut ctx: Context<Renderer>,
-    (width, height): (u32, u32),
     (mx, my): (f64, f64),
+    (width, height): (u32, u32),
+    t: f32,
+    blowup: bool,
+    images: &Vec<ImageId>
     //
     // TODO : keyboard status
     //
-    t: f32
 ) -> Context<Renderer> {
     //
     //
@@ -152,23 +168,52 @@ fn render_demo(
     ctx = caps::draw(ctx, 10.0, 300.0, 30.0);
     ctx = scissor::draw(ctx, 50.0, height as f32 - 80.0, t);
     //
+    ctx.restore();
     //blowup
+    ctx.save();
+    if blowup {
+        
+        ctx.rotate(((t*0.3).sin()*5.0).to_radians());
+        ctx.scale(2.0, 2.0);
+    }
     //
     // widgets
-    //ctx = draw_window
+    ctx = window::draw(ctx, "Widgets 'n Stuff", 50.0, 50.0, 300.0, 400.0);
     //
-    let mut _x = 60;
-    let mut _y = 95;
-    //
-    //ctx = draw_search_bow
-    //ctx = draw_drop_down
+    let x = 60.0;
+    let y = 95.0;
+    ctx = search_box::draw(ctx, "Search", x, y, 280.0, 25.0);
+    let y = y + 40.0;
+    ctx = drop_down::draw(ctx, "Effects", x, y, 280.0, 28.0);
+    let thumb_y = y + 14.0;
+
     // forms
-    //ctx = draw_label
+    let y = y + 45.0;
+    ctx = label::draw(ctx, "Login", x, y, 280.0, 20.0);
+    let y = y + 25.0;
+    ctx = edit_box::draw(ctx, "Email", x, y, 280.0, 28.0);
+    let y = y + 35.0;
+    ctx = edit_box::draw(ctx, "Password", x, y, 280.0, 28.0);
+    let y = y + 38.0;
+    ctx = check_box::draw(ctx, "Remember me", x, y, 140.0, 28.0);
+    #[allow(non_snake_case)]
+    let ICON_LOGIN = "";
+    ctx = button::draw(ctx, Some(ICON_LOGIN), "Sign in", x+138.0, y, 140.0, 28.0, Color::rgba_i(0, 96, 128, 255));
+
+    let y = y + 45.0;
+    ctx = label::draw(ctx, "Diameter", x, y, 280.0, 20.0);
+    let y = y + 25.0;
+    ctx = edit_box_num::draw(ctx, "123.00", "px", x+180.0, y, 100.0, 28.0);
+    ctx = slider::draw(ctx, 0.4, x, y, 170.0, 28.0);
+    let y = y + 55.0;
+
+    #[allow(non_snake_case)]
+    let ICON_TRASH = "";
+    ctx = button::draw(ctx, Some(ICON_TRASH), "Delete", x, y, 160.0, 28.0, Color::rgba_i(128, 16, 8, 255));
+    ctx = button::draw(ctx, None, "Cancel", x+170.0, y, 110.0, 28.0, Color::rgba_i(0, 0, 0, 0));
     //
-    //
-    //
-    //ctx = draw_edit_box
-    //
+
+    ctx.thumbnails(365.0, thumb_y-30.0, 160.0, 300.0, &images, t);
     ctx.restore();
     ctx
 }
