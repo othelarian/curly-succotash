@@ -133,6 +133,8 @@ mod button;
 mod slider;
 mod thumbnails;
 use crate::drawing::thumbnails::Thumbnails;
+mod graph;
+use crate::drawing::graph::Graph;
 
 fn render_demo(
     mut ctx: Context<Renderer>,
@@ -158,7 +160,7 @@ fn render_demo(
         ctx, (width - 450) as f32, 50.0, 150.0, 100.0,
         mx as f32, my as f32
     );
-    //ctx = draw_graph(ctx);
+    ctx.graph(0.0, (height/2) as f32, width as f32, (height/2) as f32, t);
     ctx = color_wheel::draw(
         ctx, (width - 300) as f32, (height - 300) as f32,
         250.0, 250.0, t
