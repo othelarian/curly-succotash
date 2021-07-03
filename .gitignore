@@ -14,3 +14,4 @@ screenshot.png
 #vscode specific
 .vscode/*
 tempCodeRunnerFile*
+curly.code-workspace
