@@ -118,6 +118,7 @@ mod eyes;
 mod lines;
 mod paragraph; // TODO
 mod widths;
+mod scissor;
 
 fn render_demo(
     mut ctx: Context<Renderer>,
@@ -149,7 +150,7 @@ fn render_demo(
     ctx = lines::draw(ctx, 120.0, (height - 50) as f32, 600.0, 50.0, t);
     ctx = widths::draw(ctx, 10.0, 50.0, 30.0);
     ctx = caps::draw(ctx, 10.0, 300.0, 30.0);
-    //ctx = draw_scissors(ctx);
+    ctx = scissor::draw(ctx, 50.0, height as f32 - 80.0, t);
     //
     //blowup
     //
